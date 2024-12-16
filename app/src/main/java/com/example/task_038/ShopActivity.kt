@@ -12,10 +12,11 @@ import kotlin.system.exitProcess
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
 
 class ShopActivity : AppCompatActivity() {
 
-    var maskProducts = ""
+    var maskProducts = mutableListOf<Int>()
     val products = ProductDataBase.products
 
     private lateinit var toolBarShop: Toolbar
@@ -26,8 +27,8 @@ class ShopActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop)
 
-        maskProducts = ""
-        for ( i in products.indices) maskProducts = maskProducts+"0"
+        maskProducts.add(0)
+        for ( i in products.indices)  maskProducts.add(0)
 
         val dialogBuilder = AlertDialog.Builder(this)
 
@@ -44,12 +45,12 @@ class ShopActivity : AppCompatActivity() {
             override fun onProductClick(product: Product, position: Int) {
                 dialogBuilder.setTitle("Подтверждение покупки")
                 dialogBuilder.setPositiveButton("В корзину"){_, _ ->
-                    maskProducts = maskProducts.replaceRange(position,position,"1")
-                    maskProducts = maskProducts.substring(0,products.size)
+                    maskProducts.set(position, maskProducts.get(position)+1)
                 }
                 dialogBuilder.setNegativeButton("Отмена"){dialog, which ->
-                    maskProducts = maskProducts.replaceRange(position,position,"0")
-                    maskProducts = maskProducts.substring(0,products.size)
+                    if (maskProducts.get(position) > 0) {
+                        maskProducts.set(position, maskProducts.get(position)-1)
+                    }
                 }
                 dialogBuilder.create().show()
             }
@@ -63,8 +64,9 @@ class ShopActivity : AppCompatActivity() {
                 duration = 1000
             }.start()
 
+            val stringData = Gson().toJson(maskProducts)
             val intent = Intent(this@ShopActivity, CartActivity::class.java)
-            intent.putExtra("maskProducts", maskProducts)
+            intent.putExtra("stringData", stringData)
             startActivity(intent)
         }
     }

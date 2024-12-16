@@ -9,6 +9,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 import kotlin.system.exitProcess
 
 class CartActivity : AppCompatActivity() {
@@ -27,14 +30,20 @@ class CartActivity : AppCompatActivity() {
 
         init()
 
-        val maskProducts = intent.getStringExtra("maskProducts")
+        intent.hasExtra("stringData").let {
+            if (it) {
+                val listType: Type = object : TypeToken<MutableList<Int>>() {}.type
+                val maskProducts = Gson().fromJson(intent.getStringExtra("stringData"), listType) as MutableList<Int>
 
-        for (i in maskProducts!!.indices)
-        {
-            if (maskProducts.get(i) == '1')
-            {
-                cartProducts.add(products[i])
-                outputResult = outputResult + products[i].name+" "+products[i].price.toString()+"\n"
+                for (i in maskProducts.indices)
+                {
+                    if (maskProducts.get(i) > 0)
+                    {
+                        cartProducts.add(products[i])
+                        outputResult = outputResult + products[i].name+" "+(maskProducts.get(i)*products[i].price).toString()+"\n"
+                    }
+                }
+
             }
         }
 
